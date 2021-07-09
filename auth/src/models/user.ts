@@ -31,7 +31,16 @@ const userSchemaFields: Record<keyof UserAttrs, any> = {
   }
 }
 
-const UserSchema = new mongoose.Schema<UserDoc,UserModel>(userSchemaFields);
+const UserSchema = new mongoose.Schema<UserDoc,UserModel>(userSchemaFields, {
+  toJSON: {
+    transform(doc, ret){
+      ret.id = ret._id;
+      delete ret._id;
+      delete ret.password;
+    },
+    versionKey: false
+  }
+});
 
 UserSchema.pre('save', async function(done){
   if (this.isModified('password')){
