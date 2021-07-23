@@ -20,8 +20,8 @@ app.use(
   cookieSession({
     // not encrypt the cookie
     signed: false,
-    // only https request
-    secure: true
+    // only https request if is not test environment
+    secure: process.env.NODE_ENV !== 'test'
   })
 )
 
