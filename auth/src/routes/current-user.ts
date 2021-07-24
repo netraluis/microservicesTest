@@ -8,7 +8,8 @@ const router = express.Router();
 router.get(
   "/api/users/currentuser",
   currentUser,
-  requireAuth,
+  // requireAuth is commented maybe some routes can be accesed without beeing log in
+  // requireAuth,
   (req: Request, res: Response, next: NextFunction) => {
     res.send({ currentuser: req.currentUser || null });
   }
