@@ -2,6 +2,8 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 // next default component
 
-export default ({ Component, pageProps }) => {
+const App = ({ Component, pageProps }) => {
   return <Component { ...pageProps } />
 };
+
+export default App;
