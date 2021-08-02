@@ -1,7 +1,7 @@
 import buildClient from "../api/build-client";
 
 // index es el route
-const Index = ({ currentuser }) => {
+const Index = ({currentuser}) => {
   return currentuser ? <h1>Estás logeado</h1> : <h1> No estás logeado</h1>;
 };
 
