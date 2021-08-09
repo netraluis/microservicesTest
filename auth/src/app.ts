@@ -30,6 +30,6 @@ app.use(signupRouter);
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   next(new NotFoundError());
 })
-app.use(errorHandler)
+app.use(errorHandler);
 
 export { app };
