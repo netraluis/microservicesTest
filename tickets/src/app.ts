@@ -1,7 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { json } from 'body-parser';
 import cookieSession from 'cookie-session';
-import { errorHandler, NotFoundError } from '@nltickets/common';
+import { errorHandler, NotFoundError } from '@nltickets/common'
+
+import { currentUserRouter } from './routes/current-user';
+import { createTicketRouter } from './routes/new';
+
 
 const app = express();
 //app has been proxyed by ingress and gnex
@@ -18,10 +22,11 @@ app.use(
   })
 )
 
+app.use(createTicketRouter);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   next(new NotFoundError());
 })
-app.use(errorHandler)
+app.use(errorHandler);
 
 export { app };
