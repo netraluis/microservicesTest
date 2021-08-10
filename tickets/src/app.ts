@@ -1,10 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { json } from 'body-parser';
 import cookieSession from 'cookie-session';
-import { errorHandler, NotFoundError } from '@nltickets/common'
+import { errorHandler, NotFoundError, currentUser } from '@nltickets/common'
 
-import { currentUserRouter } from './routes/current-user';
 import { createTicketRouter } from './routes/new';
+import { showTicketRouter } from './routes/show';
 
 
 const app = express();
@@ -22,6 +22,9 @@ app.use(
   })
 )
 
+app.use(currentUser);
+
+app.use(showTicketRouter)
 app.use(createTicketRouter);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {

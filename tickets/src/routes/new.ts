@@ -6,7 +6,6 @@ import { Ticket } from '../model/ticket';
 const router = express.Router();
 
 router.post('/api/tickets', 
-currentUser,
 requireAuth,
 [
   body('title')
