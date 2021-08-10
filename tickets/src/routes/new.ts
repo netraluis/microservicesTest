@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
-import { requireAuth, validateRequest, currentUser } from '@nltickets/common';
+import { requireAuth, validateRequest } from '@nltickets/common';
 import { Ticket } from '../model/ticket';
 
 const router = express.Router();
