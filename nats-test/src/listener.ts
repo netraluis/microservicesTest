@@ -3,7 +3,8 @@ import { randomBytes } from 'crypto';
 
 console.clear();
 
-const stan = nats.connect('ticketing', randomBytes(4).toString('hex'), {
+const stanId = randomBytes(4).toString('hex')
+const stan = nats.connect('ticketing', stanId, {
   url: 'http://localhost:4222',
 });
 
@@ -15,27 +16,29 @@ stan.on('connect', () => {
     process.exit();
   });
 
-  const options = stan
-    .subscriptionOptions()
-    .setManualAckMode(true)
-    .setDeliverAllAvailable()
-    .setDurableName('accounting-service');
+  // const options = stan
+  //   .subscriptionOptions()
+  //   .setManualAckMode(true)
+  //   .setDeliverAllAvailable()
+  //   .setDurableName('accounting-service');
 
-  const subscription = stan.subscribe(
-    'ticket:created',
-    'queue-group-name',
-    options
-  );
+  // const subscription = stan.subscribe(
+  //   'ticket:created',
+  //   'queue-group-name',
+  //   options
+  // );
 
-  subscription.on('message', (msg: Message) => {
-    const data = msg.getData();
+  // subscription.on('message', (msg: Message) => {
+  //   const data = msg.getData();
 
-    if (typeof data === 'string') {
-      console.log(`Received event #${msg.getSequence()}, with data: ${data}`);
-    }
+  //   if (typeof data === 'string') {
+  //     console.log(`Received event #${msg.getSequence()}, with data: ${data}`);
+  //   }
 
-    msg.ack();
-  });
+  //   msg.ack();
+  // });
+
+  new TicketCreatedListener(stan).listen();
 });
 
 process.on('SIGINT', () => stan.close());
@@ -46,6 +49,7 @@ abstract class Listener {
   abstract queueGroupName: string;
   abstract onMessage(data: any, msg: Message): void;
   private client: Stan;
+  // protected a subclass can redifined
   protected ackWait = 5 * 1000;
 
   constructor(client: Stan) {
@@ -53,6 +57,12 @@ abstract class Listener {
   }
 
   subscriptionOptions() {
+    /* 
+      **setDeliverAllAvailable** every time a listner is subscribe or restart receiv all the events of the channel if we add **setDurableName** only receive the events that were not emited
+      **setManualAckMode** to true makes that the ack is not send automocatic to the nats and the program send it with **msg.ack();**
+      **setAckWait** customize acknoledge period
+      **setDurableName** to inform the subscriber which events have been processed
+    */ 
     return this.client
       .subscriptionOptions()
       .setDeliverAllAvailable()
@@ -68,6 +78,7 @@ abstract class Listener {
       this.subscriptionOptions()
     );
 
+    // message is the event
     subscription.on('message', (msg: Message) => {
       console.log(`Message received: ${this.subject} / ${this.queueGroupName}`);
 
@@ -81,5 +92,17 @@ abstract class Listener {
     return typeof data === 'string'
       ? JSON.parse(data)
       : JSON.parse(data.toString('utf8'));
+      // parsing a buffer
+  }
+}
+
+class TicketCreatedListener extends Listener {
+  subject = 'ticket:created';
+  queueGroupName = 'payment-service';
+
+  onMessage(data: any, msg:Message){
+    console.log('Event data', data);
+
+    msg.ack();
   }
 }
