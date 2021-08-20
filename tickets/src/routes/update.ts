@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
 import { requireAuth, validateRequest, NotFoundError, NotAuthorizedError } from '@nltickets/common';
 import { Ticket } from '../model/ticket';
+import { TicketUpdatedPublisher } from '../events/publisher/ticket-updated-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -30,6 +32,14 @@ async (req: Request, res: Response, next: NextFunction)=> {
 
   ticket.set(req.body);
   await ticket.save();
+
+  // TODO database transaction
+  await new TicketUpdatedPublisher(natsWrapper.client).publish({
+    id: ticket.id,
+    title: ticket.title, 
+    price: ticket.price,
+    userId: ticket.userId
+  });
   
   res.status(200).send(ticket);
 })
