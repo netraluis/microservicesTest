@@ -1,5 +1,8 @@
 
 import mongoose from 'mongoose';
+// import { requireAuth, validateRequest, NotFoundError, OrderStatus, BadRequestError } from '@nltickets/common';
+
+import { Order, OrderStatus } from './order'
 
 // An interface that describes the properties
 // that are requried to create a new Ticket
@@ -18,7 +21,7 @@ interface TicketModel extends mongoose.Model<TicketDoc> {
 // An interface that describes the properties
 // that a Ticket Document has
 export interface TicketDoc extends TicketAttrs, mongoose.Document {
-  
+  isReserved(): Promise<boolean>
 }
 
 const ticketSchemaFields: Record<keyof TicketAttrs, any> = {
@@ -49,6 +52,29 @@ const TicketSchema = new mongoose.Schema<TicketDoc,TicketModel>(ticketSchemaFiel
 TicketSchema.statics.build = (attrs: TicketAttrs) => {
   return new Ticket(attrs);
 };
+
+TicketSchema.methods.isReserved = async function() {
+  // this is equal to tocket doc that we just called 'isReserved' on 
+
+    /**
+   * run a query to look all orders. Find an order where the ticket is the ticket
+   * we just found && the orders status !cancelled.
+   * if we fin an order from that means the ticket is reserved
+   */
+     const exisitngOrder =  await Order.findOne({
+      ticket: this!,
+      status: {
+        $in: [
+          OrderStatus.Created,
+          OrderStatus.AwaitingPayment,
+          OrderStatus.Complete
+        ]
+      }
+    })
+
+    return !!exisitngOrder;
+
+}
 
 const Ticket = mongoose.model<TicketDoc, TicketModel>('Ticket', TicketSchema);
 
