@@ -26,13 +26,13 @@ validateRequest,
   // Find the ticket the user is trying to order in the database
   const ticket = await Ticket.findById(ticketId);
   if(!ticket){
-    next(new NotFoundError())
+    return next(new NotFoundError())
   }
 
   // This ticket is not already reserved
   const isReserved = await ticket!.isReserved();
   if(isReserved){
-    next(new BadRequestError('Ticket is already reserved'))
+    return next(new BadRequestError('Ticket is already reserved'))
   }
 
   // Calculate an expiration date for this order
